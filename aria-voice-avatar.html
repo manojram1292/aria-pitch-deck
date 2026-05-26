@@ -1,0 +1,573 @@
+<!--
+  ARIA — Talk-to-her voice avatar  (Route C prototype, single file)
+  =================================================================
+  WORKS WITH ZERO SETUP:
+    • Speech-to-text  : your browser's free Web Speech API  (use CHROME or EDGE)
+    • Voice (TTS)     : your browser's free speech synthesis
+    • Brain           : a built-in scripted "Aria" that answers common questions
+    → Just open in Chrome, click the mic, and talk. Great for the pitch.
+
+  UPGRADE IT (optional) — paste keys in the CONFIG block below OR in the ⚙ panel:
+    • Realistic voice : ElevenLabs API key + Voice ID  (gives real amplitude lip-sync)
+    • Real LLM brain  : Anthropic key  (works direct from browser)
+                        OR any OpenAI-compatible endpoint (your Aria backend,
+                        a local Ollama/LM Studio, MiniMax-compatible, etc.)
+
+  ⚠ NOTES
+    • Keys typed here live in the page only (nothing is stored or sent anywhere
+      except the provider you choose). Don't publish this file with real keys in it.
+    • OpenAI's public API blocks direct browser calls (CORS). Use Anthropic, a
+      local Ollama/LM Studio endpoint, or your own proxy/backend for the LLM.
+    • Mic + speech recognition need Chrome/Edge and a page served over https:// or
+      localhost (file:// usually works in Chrome too).
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aria · Talk to her</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0b0a0f; --surface:#17141f; --surface-2:#1d1a28;
+    --line:rgba(255,255,255,.10); --line-2:rgba(255,255,255,.18);
+    --cream:#f5f1e9; --muted:#9b93a8; --muted-2:#6f6880;
+    --coral:#ff5c38; --coral-soft:#ff8164; --violet:#7c5cff; --mint:#6ee7b7;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--ink);color:var(--cream);font-family:'Plus Jakarta Sans',system-ui,sans-serif;
+    min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+  ::selection{background:var(--coral);color:#1a0f0a}
+
+  .bg-glow{position:fixed;inset:0;z-index:0;pointer-events:none}
+  .bg-glow::before,.bg-glow::after{content:"";position:absolute;border-radius:50%;filter:blur(130px);opacity:.45}
+  .bg-glow::before{width:55vw;height:55vw;top:-18vw;right:-12vw;background:radial-gradient(circle,rgba(255,92,56,.5),transparent 60%)}
+  .bg-glow::after{width:50vw;height:50vw;bottom:-20vw;left:-14vw;background:radial-gradient(circle,rgba(124,92,255,.5),transparent 60%)}
+
+  .app{position:relative;z-index:2;min-height:100vh;display:flex;flex-direction:column;align-items:center;
+    justify-content:center;padding:28px 18px 40px;gap:8px}
+
+  /* header */
+  .brand{position:fixed;top:18px;left:22px;z-index:30;display:flex;align-items:center;gap:11px;
+    font-family:'Bricolage Grotesque';font-weight:700;font-size:21px;letter-spacing:-.02em}
+  .brand .eq{display:flex;align-items:flex-end;gap:3px;height:20px}
+  .brand .eq span{width:3px;background:var(--coral);border-radius:3px;animation:eq 1.1s ease-in-out infinite}
+  .brand .eq span:nth-child(2){height:90%;animation-delay:.15s;background:var(--coral-soft)}
+  .brand .eq span:nth-child(3){height:60%;animation-delay:.3s;background:var(--violet)}
+  .brand .eq span:nth-child(4){height:100%;animation-delay:.45s;background:var(--coral)}
+  @keyframes eq{0%,100%{transform:scaleY(.35)}50%{transform:scaleY(1)}}
+
+  .gear{position:fixed;top:16px;right:18px;z-index:30;width:42px;height:42px;border-radius:50%;
+    border:1px solid var(--line-2);background:rgba(255,255,255,.05);color:var(--cream);cursor:pointer;
+    font-size:18px;display:grid;place-items:center;transition:.2s}
+  .gear:hover{background:rgba(255,255,255,.12);transform:rotate(40deg)}
+
+  /* avatar */
+  .stage{width:min(380px,86vw);aspect-ratio:1;position:relative;display:grid;place-items:center}
+  #avatar{width:100%;height:100%;overflow:visible}
+  .breathe{transform-box:fill-box;transform-origin:center;animation:breathe 5s ease-in-out infinite}
+  @keyframes breathe{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-6px) rotate(.6deg)}}
+  .eyeLid{transform-box:fill-box;transform-origin:center;transition:transform .09s ease}
+  .blink .eyeLid{transform:scaleY(.06)}
+
+  /* status pill */
+  .status{margin-top:6px;display:inline-flex;align-items:center;gap:10px;font-size:14.5px;font-weight:600;
+    color:var(--muted);padding:9px 18px;border-radius:99px;border:1px solid var(--line);background:rgba(255,255,255,.03);
+    transition:.25s;min-height:40px}
+  .status .pip{width:9px;height:9px;border-radius:50%;background:var(--muted-2)}
+  .status[data-s="listening"]{color:var(--mint);border-color:rgba(110,231,183,.4)} .status[data-s="listening"] .pip{background:var(--mint);animation:pulse 1s infinite}
+  .status[data-s="thinking"]{color:var(--violet);border-color:rgba(124,92,255,.4)} .status[data-s="thinking"] .pip{background:var(--violet);animation:pulse .7s infinite}
+  .status[data-s="speaking"]{color:var(--coral);border-color:rgba(255,92,56,.4)} .status[data-s="speaking"] .pip{background:var(--coral);animation:pulse .5s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+
+  /* transcript */
+  .chat{width:min(560px,92vw);margin-top:6px;display:flex;flex-direction:column;gap:9px;max-height:26vh;overflow-y:auto;
+    padding:4px 4px 2px;scrollbar-width:thin}
+  .bub{padding:10px 15px;border-radius:15px;font-size:14.5px;line-height:1.45;max-width:85%;animation:rise .35s ease}
+  @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .bub.me{align-self:flex-end;background:var(--surface-2);border:1px solid var(--line);border-bottom-right-radius:5px}
+  .bub.ar{align-self:flex-start;background:linear-gradient(160deg,rgba(255,92,56,.16),rgba(124,92,255,.1));
+    border:1px solid rgba(255,92,56,.25);border-bottom-left-radius:5px}
+  .bub small{display:block;font-size:11px;color:var(--muted-2);margin-bottom:2px;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+
+  /* controls */
+  .controls{margin-top:10px;display:flex;align-items:center;gap:12px;width:min(560px,92vw)}
+  .mic{flex-shrink:0;width:66px;height:66px;border-radius:50%;border:none;cursor:pointer;background:var(--coral);
+    color:#1a0f0a;font-size:26px;display:grid;place-items:center;box-shadow:0 10px 34px rgba(255,92,56,.4);transition:.18s}
+  .mic:hover{transform:translateY(-2px)} .mic:active{transform:scale(.95)}
+  .mic.on{background:var(--mint);box-shadow:0 0 0 8px rgba(110,231,183,.18),0 10px 34px rgba(110,231,183,.4);animation:micpulse 1.3s infinite}
+  @keyframes micpulse{0%,100%{box-shadow:0 0 0 8px rgba(110,231,183,.18),0 10px 30px rgba(110,231,183,.35)}50%{box-shadow:0 0 0 16px rgba(110,231,183,.06),0 10px 30px rgba(110,231,183,.35)}}
+  .ti{flex:1;display:flex;gap:8px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:99px;padding:6px 6px 6px 18px}
+  .ti input{flex:1;background:none;border:none;color:var(--cream);font-family:inherit;font-size:15px;outline:none}
+  .ti input::placeholder{color:var(--muted-2)}
+  .ti button{border:none;cursor:pointer;background:var(--surface-2);color:var(--cream);width:40px;height:40px;border-radius:50%;font-size:17px;transition:.18s}
+  .ti button:hover{background:var(--violet);color:#fff}
+  .hint{font-size:12.5px;color:var(--muted-2);margin-top:12px;text-align:center}
+  .stopbtn{margin-top:8px;font-size:12.5px;color:var(--muted);background:none;border:1px solid var(--line);
+    border-radius:99px;padding:6px 14px;cursor:pointer;display:none}
+  .stopbtn:hover{color:var(--cream);border-color:var(--line-2)}
+
+  /* settings drawer */
+  .scrim{position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.55);backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:.25s}
+  .scrim.open{opacity:1;pointer-events:auto}
+  .drawer{position:fixed;top:0;right:0;z-index:41;height:100%;width:min(420px,92vw);background:var(--surface);
+    border-left:1px solid var(--line);padding:26px 24px;overflow-y:auto;transform:translateX(105%);transition:transform .3s cubic-bezier(.2,.7,.2,1)}
+  .drawer.open{transform:none}
+  .drawer h2{font-family:'Bricolage Grotesque';font-size:24px;margin-bottom:4px}
+  .drawer .sub{color:var(--muted);font-size:13.5px;margin-bottom:20px}
+  .fld{margin-bottom:16px}
+  .fld label{display:block;font-size:12.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
+  .fld input,.fld select,.fld textarea{width:100%;background:var(--ink);border:1px solid var(--line);border-radius:11px;
+    padding:11px 13px;color:var(--cream);font-family:inherit;font-size:14px;outline:none}
+  .fld input:focus,.fld select:focus,.fld textarea:focus{border-color:var(--coral)}
+  .fld textarea{resize:vertical;min-height:74px;line-height:1.5}
+  .seg{display:flex;gap:6px;background:var(--ink);border:1px solid var(--line);border-radius:11px;padding:4px}
+  .seg button{flex:1;border:none;background:none;color:var(--muted);font-family:inherit;font-weight:600;font-size:13px;padding:8px;border-radius:8px;cursor:pointer;transition:.15s}
+  .seg button.active{background:var(--coral);color:#1a0f0a}
+  .grp{border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:16px;background:rgba(255,255,255,.02)}
+  .grp h3{font-family:'Bricolage Grotesque';font-size:15px;margin-bottom:12px;color:var(--coral-soft)}
+  .savebtn{width:100%;background:var(--coral);color:#1a0f0a;border:none;border-radius:99px;padding:13px;font-family:inherit;
+    font-weight:700;font-size:15px;cursor:pointer;margin-top:6px}
+  .savebtn:hover{background:var(--coral-soft)}
+  .note{font-size:12px;color:var(--muted-2);line-height:1.5;margin-top:4px}
+  .warn{display:none;color:var(--coral-soft);font-size:13px;background:rgba(255,92,56,.1);border:1px solid rgba(255,92,56,.3);
+    border-radius:11px;padding:11px 14px;margin-bottom:14px;line-height:1.5}
+</style>
+</head>
+<body>
+<div class="bg-glow"></div>
+
+<div class="brand"><span class="eq"><span></span><span></span><span></span><span></span></span>Aria</div>
+<button class="gear" id="gear" title="Settings">⚙</button>
+
+<div class="app">
+  <div class="stage">
+    <svg id="avatar" viewBox="0 0 320 320" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="skin" cx="50%" cy="42%" r="65%">
+          <stop offset="0%" stop-color="#ffe6da"/><stop offset="60%" stop-color="#ffcdbb"/><stop offset="100%" stop-color="#e8a98f"/>
+        </radialGradient>
+        <linearGradient id="hair" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#3a2740"/><stop offset="100%" stop-color="#241830"/>
+        </linearGradient>
+        <linearGradient id="ring" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#ff5c38"/><stop offset="100%" stop-color="#7c5cff"/>
+        </linearGradient>
+        <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="rgba(255,92,56,.35)"/><stop offset="100%" stop-color="rgba(255,92,56,0)"/>
+        </radialGradient>
+      </defs>
+
+      <!-- aura rings (animated) -->
+      <g id="aura">
+        <circle id="ring3" cx="160" cy="160" r="150" fill="none" stroke="url(#ring)" stroke-width="1.5" opacity="0.12"/>
+        <circle id="ring2" cx="160" cy="160" r="132" fill="none" stroke="url(#ring)" stroke-width="2" opacity="0.2"/>
+        <circle id="ring1" cx="160" cy="160" r="116" fill="none" stroke="url(#ring)" stroke-width="2.5" opacity="0.32"/>
+      </g>
+      <circle id="halo" cx="160" cy="160" r="120" fill="url(#glow)" opacity="0.5"/>
+
+      <g class="breathe">
+        <!-- hair back -->
+        <path d="M86 150 Q80 70 160 64 Q240 70 234 150 Q244 188 232 214 L220 150 Q200 96 160 96 Q120 96 100 150 L88 214 Q76 188 86 150Z" fill="url(#hair)"/>
+        <!-- neck -->
+        <path d="M138 210 H182 V236 Q160 250 138 236 Z" fill="#e8a98f"/>
+        <!-- face -->
+        <ellipse cx="160" cy="158" rx="62" ry="70" fill="url(#skin)"/>
+        <!-- ears -->
+        <ellipse cx="100" cy="162" rx="9" ry="14" fill="#e8a98f"/>
+        <ellipse cx="220" cy="162" rx="9" ry="14" fill="#e8a98f"/>
+        <!-- brows -->
+        <path d="M124 132 Q140 124 154 131" stroke="#4a3550" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <path d="M166 131 Q180 124 196 132" stroke="#4a3550" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <!-- eyes -->
+        <g id="eyeGroupL">
+          <ellipse cx="139" cy="150" rx="13" ry="9" fill="#fff"/>
+          <circle cx="140" cy="150" r="6.2" fill="#5b3a2e"/><circle cx="140" cy="150" r="2.6" fill="#1a0f0a"/>
+          <circle cx="142" cy="148" r="1.6" fill="#fff"/>
+          <ellipse class="eyeLid" cx="139" cy="150" rx="14" ry="10" fill="url(#skin)"/>
+        </g>
+        <g id="eyeGroupR">
+          <ellipse cx="181" cy="150" rx="13" ry="9" fill="#fff"/>
+          <circle cx="180" cy="150" r="6.2" fill="#5b3a2e"/><circle cx="180" cy="150" r="2.6" fill="#1a0f0a"/>
+          <circle cx="182" cy="148" r="1.6" fill="#fff"/>
+          <ellipse class="eyeLid" cx="181" cy="150" rx="14" ry="10" fill="url(#skin)"/>
+        </g>
+        <!-- nose -->
+        <path d="M160 158 Q156 174 152 180 Q160 184 168 180" stroke="#d99a82" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <!-- mouth: lips (always) + opening (animated) -->
+        <path id="lips" d="M142 196 Q160 204 178 196 Q160 200 142 196Z" fill="#c45c5c"/>
+        <ellipse id="mouth" cx="160" cy="198" rx="15" ry="0" fill="#7a2e36"/>
+        <ellipse id="teeth" cx="160" cy="195" rx="12" ry="0" fill="#fff" opacity="0.9"/>
+        <!-- cheeks blush -->
+        <ellipse cx="122" cy="176" rx="10" ry="6" fill="#ff8a6a" opacity="0.25"/>
+        <ellipse cx="198" cy="176" rx="10" ry="6" fill="#ff8a6a" opacity="0.25"/>
+        <!-- headset (voice-agent cue) -->
+        <path d="M96 150 Q96 92 160 92 Q224 92 224 150" stroke="#2a2535" stroke-width="7" fill="none" stroke-linecap="round"/>
+        <rect x="88" y="148" width="16" height="30" rx="7" fill="#2a2535"/>
+        <rect x="216" y="148" width="16" height="30" rx="7" fill="#2a2535"/>
+        <path d="M96 176 Q86 200 120 206" stroke="#2a2535" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <circle cx="122" cy="206" r="6" fill="var(--coral)"/>
+      </g>
+    </svg>
+  </div>
+
+  <div class="status" id="status" data-s="idle"><span class="pip"></span><span id="statusTxt">Tap the mic and say hi</span></div>
+
+  <div class="chat" id="chat"></div>
+
+  <div class="controls">
+    <button class="mic" id="mic" title="Hold a conversation">🎙️</button>
+    <div class="ti">
+      <input id="textIn" placeholder="…or type to Aria and press enter">
+      <button id="sendBtn" title="Send">↑</button>
+    </div>
+  </div>
+  <button class="stopbtn" id="stopBtn">■ Stop speaking</button>
+  <div class="hint" id="hint">Free mode: browser voice + built-in Aria brain · open the ⚙ to add ElevenLabs / your LLM</div>
+</div>
+
+<!-- SETTINGS -->
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer">
+  <h2>Settings</h2>
+  <p class="sub">Everything stays in this page. Leave blank to use the free defaults.</p>
+  <div class="warn" id="browserWarn">Heads up: this browser may not support live speech-to-text. Use <b>Chrome</b> or <b>Edge</b>, or just type to Aria instead.</div>
+
+  <div class="grp">
+    <h3>🔊 Voice</h3>
+    <div class="fld"><label>Voice engine</label>
+      <div class="seg" id="ttsSeg">
+        <button data-v="browser" class="active">Browser (free)</button>
+        <button data-v="eleven">ElevenLabs</button>
+      </div>
+    </div>
+    <div id="elevenFields" style="display:none">
+      <div class="fld"><label>ElevenLabs API key</label><input id="elKey" type="password" placeholder="sk_..."></div>
+      <div class="fld"><label>Voice ID</label><input id="elVoice" value="21m00Tcm4TlvDq8ikWAM"><div class="note">Default is the public "Rachel" voice. Paste any Voice ID from your ElevenLabs library. ElevenLabs gives accurate amplitude-based lip-sync.</div></div>
+    </div>
+  </div>
+
+  <div class="grp">
+    <h3>🧠 Brain</h3>
+    <div class="fld"><label>Who answers</label>
+      <div class="seg" id="brainSeg">
+        <button data-b="demo" class="active">Demo</button>
+        <button data-b="anthropic">Anthropic</button>
+        <button data-b="openrouter">OpenRouter</button>
+        <button data-b="custom">Local / Own</button>
+      </div>
+    </div>
+    <div id="anthFields" style="display:none">
+      <div class="fld"><label>Anthropic API key</label><input id="anthKey" type="password" placeholder="sk-ant-..."></div>
+      <div class="fld"><label>Model</label><input id="anthModel" value="claude-3-5-sonnet-20241022"></div>
+      <div class="note">✅ Works directly in the browser. Good easy choice for natural conversation.</div>
+    </div>
+    <div id="orFields" style="display:none">
+      <div class="fld"><label>OpenRouter API key</label><input id="orKey" type="password" placeholder="sk-or-..."></div>
+      <div class="fld"><label>Model</label><input id="orModel" value="openai/gpt-4o-mini"></div>
+      <div class="note">✅ Easiest way to use OpenAI/GPT models from a webpage. Get a key at openrouter.ai, paste it here — the endpoint is handled for you. Try models like <b>openai/gpt-4o-mini</b>, <b>openai/gpt-4o</b>, or <b>anthropic/claude-3.5-sonnet</b>.</div>
+    </div>
+    <div id="customFields" style="display:none">
+      <div class="fld"><label>Endpoint URL</label><input id="cuUrl" value="http://localhost:11434/v1/chat/completions"></div>
+      <div class="fld"><label>API key (optional)</label><input id="cuKey" type="password" placeholder="blank for local Ollama / LM Studio"></div>
+      <div class="fld"><label>Model</label><input id="cuModel" placeholder="llama3.1  ·  your-aria-model"></div>
+      <div class="note">For a local model (Ollama/LM Studio — free, no CORS issues) or your own Aria backend. The URL above is the Ollama default.</div>
+    </div>
+    <div class="note" style="margin-top:6px">⚠ A plain <b>OpenAI</b> key won't work pasted here — OpenAI blocks browser calls. Use OpenRouter (above) to reach GPT models instead.</div>
+  </div>
+
+  <div class="grp">
+    <h3>🎭 Persona</h3>
+    <div class="fld"><label>System prompt</label><textarea id="sysPrompt">You are Aria, a friendly AI voice agent for local service businesses (plumbers, lawn care, HVAC, electricians, cleaners). You answer calls 24/7, book appointments, send SMS/email follow-ups, and warm-transfer hot leads to a human. Speak warmly and naturally, like on a phone call. Keep every reply under 55 words.</textarea></div>
+  </div>
+
+  <button class="savebtn" id="saveBtn">Save & close</button>
+</aside>
+
+<script>
+/* ======================= CONFIG (optional pre-fill) =======================
+   You can hardcode keys here so you don't retype them each load.
+   Anything left "" falls back to the free defaults / the ⚙ panel.            */
+const CONFIG = {
+  ttsEngine : "browser",     // "browser" | "eleven"
+  elevenKey : "",
+  elevenVoice : "21m00Tcm4TlvDq8ikWAM",
+  brain : "demo",            // "demo" | "anthropic" | "openrouter" | "custom"
+  anthKey : "", anthModel : "claude-3-5-sonnet-20241022",
+  orKey : "", orModel : "openai/gpt-4o-mini",
+  customUrl : "http://localhost:11434/v1/chat/completions", customKey : "", customModel : "",
+};
+/* ========================================================================= */
+
+const S = {                       // live state
+  ttsEngine: CONFIG.ttsEngine, elKey: CONFIG.elevenKey, elVoice: CONFIG.elevenVoice,
+  brain: CONFIG.brain, anthKey: CONFIG.anthKey, anthModel: CONFIG.anthModel,
+  orKey: CONFIG.orKey, orModel: CONFIG.orModel,
+  cuUrl: CONFIG.customUrl, cuKey: CONFIG.customKey, cuModel: CONFIG.customModel,
+  sys: "", history: [], listening: false, busy: false,
+};
+
+/* ---------- elements ---------- */
+const $ = id => document.getElementById(id);
+const statusEl=$('status'), statusTxt=$('statusTxt'), chat=$('chat'),
+      micBtn=$('mic'), textIn=$('textIn'), sendBtn=$('sendBtn'), stopBtn=$('stopBtn'),
+      avatar=$('avatar'), mouth=$('mouth'), teeth=$('teeth');
+
+/* ---------- avatar animation engine ---------- */
+let level=0, targetLevel=0, mode='idle', flapPhase=0;
+function setMode(m){
+  mode=m;
+  const map={idle:'Tap the mic and say hi',listening:'Listening…',thinking:'Thinking…',speaking:'Aria is speaking…'};
+  statusEl.dataset.s=m; statusTxt.textContent=map[m]||map.idle;
+  micBtn.classList.toggle('on', m==='listening');
+}
+const ring1=$('ring1'),ring2=$('ring2'),ring3=$('ring3'),halo=$('halo');
+function animate(){
+  // choose target level by mode
+  if(mode==='speaking'){
+    if(S.ttsEngine==='eleven' && analyser){ targetLevel=readAmp(); }
+    else { flapPhase+=0.5; targetLevel=Math.max(0,(Math.sin(flapPhase)*0.5+0.5)*(0.55+Math.random()*0.45)); }
+  } else if(mode==='listening'){
+    targetLevel = micAnalyser? readMic() : (Math.sin(Date.now()/260)*0.5+0.5)*0.4;
+  } else if(mode==='thinking'){
+    targetLevel = (Math.sin(Date.now()/180)*0.5+0.5)*0.25;
+  } else { targetLevel=0; }
+  level += (targetLevel-level)*0.4;
+
+  // mouth
+  const open = mode==='speaking'? level : 0;
+  mouth.setAttribute('ry', (open*16).toFixed(1));
+  teeth.setAttribute('ry', (open*4.5).toFixed(1));
+
+  // aura reacts to level (listening + speaking)
+  const k = (mode==='idle')? 0 : level;
+  const base={r1:116,r2:132,r3:150};
+  ring1.setAttribute('r', base.r1 + k*16); ring1.setAttribute('opacity', 0.32+k*0.5);
+  ring2.setAttribute('r', base.r2 + k*22); ring2.setAttribute('opacity', 0.2+k*0.4);
+  ring3.setAttribute('r', base.r3 + k*30); ring3.setAttribute('opacity', 0.12+k*0.3);
+  halo.setAttribute('opacity', 0.4 + k*0.5);
+  requestAnimationFrame(animate);
+}
+requestAnimationFrame(animate);
+
+/* blink */
+function blink(){
+  avatar.classList.add('blink');
+  setTimeout(()=>avatar.classList.remove('blink'),120);
+  setTimeout(blink, 2200+Math.random()*4000);
+}
+setTimeout(blink,1500);
+
+/* ---------- Web Audio (for ElevenLabs lip-sync + mic reactivity) ---------- */
+let audioCtx=null, analyser=null, ampData=null, micAnalyser=null, micData=null, currentAudio=null;
+function ensureAudio(){ if(!audioCtx){ audioCtx=new (window.AudioContext||window.webkitAudioContext)(); } if(audioCtx.state==='suspended') audioCtx.resume(); }
+function readAmp(){ if(!analyser) return 0; analyser.getByteTimeDomainData(ampData); let s=0; for(let i=0;i<ampData.length;i++){const v=(ampData[i]-128)/128;s+=v*v;} return Math.min(1, Math.sqrt(s/ampData.length)*3.2); }
+function readMic(){ if(!micAnalyser) return 0; micAnalyser.getByteTimeDomainData(micData); let s=0; for(let i=0;i<micData.length;i++){const v=(micData[i]-128)/128;s+=v*v;} return Math.min(1, Math.sqrt(s/micData.length)*4); }
+async function ensureMicAnalyser(){
+  if(micAnalyser) return;
+  try{ ensureAudio();
+    const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+    const src=audioCtx.createMediaStreamSource(stream);
+    micAnalyser=audioCtx.createAnalyser(); micAnalyser.fftSize=512; micData=new Uint8Array(micAnalyser.fftSize);
+    src.connect(micAnalyser);
+  }catch(e){ /* fall back to timed pulse */ }
+}
+
+/* ---------- transcript ---------- */
+function bubble(text, who){
+  const b=document.createElement('div'); b.className='bub '+(who==='me'?'me':'ar');
+  b.innerHTML='<small>'+(who==='me'?'You':'Aria')+'</small>'+text.replace(/</g,'&lt;');
+  chat.appendChild(b); chat.scrollTop=chat.scrollHeight; return b;
+}
+
+/* ---------- the loop: handle a user turn ---------- */
+async function handleTurn(text){
+  text=(text||'').trim(); if(!text||S.busy) return;
+  S.busy=true; bubble(text,'me'); S.history.push({role:'user',content:text});
+  setMode('thinking');
+  let reply='';
+  try{
+    if(S.brain==='anthropic' && S.anthKey) reply=await askAnthropic();
+    else if(S.brain==='openrouter' && S.orKey) reply=await askOpenRouter();
+    else if(S.brain==='custom' && S.cuUrl)  reply=await askCustom();
+    else reply=demoBrain(text);
+  }catch(err){ reply="Sorry — I couldn't reach my brain. "+(err.message||'')+" (You can switch to Demo mode in settings.)"; }
+  reply=reply.trim()||"Sorry, I didn't catch that.";
+  S.history.push({role:'assistant',content:reply});
+  bubble(reply,'ar');
+  await speak(reply);
+  S.busy=false;
+  setMode(S.listening?'listening':'idle');
+}
+
+/* ---------- brains ---------- */
+function demoBrain(t){
+  const q=t.toLowerCase();
+  const has=(...w)=>w.some(x=>q.includes(x));
+  if(has('hi','hello','hey','good morning','good afternoon')) return "Hi there! I'm Aria — your AI front desk. I can answer calls around the clock, book appointments, and follow up with customers. What would you like to know?";
+  if(has('who are you','what are you','what is aria','your name','about you')) return "I'm Aria, an AI voice agent built for local service businesses. I pick up every call, qualify the lead, book the job, and text or email a follow-up — so you never miss work while you're out on a job.";
+  if(has('price','cost','pricing','how much','plan','package')) return "We keep it simple: plans start at 149 a month with talk-minutes included, and you only pay for what you use beyond that. Most owners save several jobs a week, so I usually pay for myself in the first few days.";
+  if(has('how do you work','how does it work','how it works','process')) return "It's easy. A call comes in, I answer on the first ring, ask the right questions, then I either book the appointment, text the customer, or transfer a hot lead straight to you. You get a summary every time.";
+  if(has('book','appointment','schedule','calendar')) return "Absolutely — I check your live calendar and lock in the appointment while the customer is still on the line. Want me to walk you through how booking works?";
+  if(has('transfer','live person','human','real person')) return "Yes — for emergencies or high-value jobs, I warm-transfer the call straight to you or your on-call tech, so the important ones always reach a real person.";
+  if(has('text','sms','email','follow')) return "Right after a call I can send the customer a confirmation text and email you the full lead — name, number, job type, and urgency. Nothing slips through the cracks.";
+  if(has('language','bilingual','spanish','french')) return "I can handle calls in multiple languages, including English and French, so you never lose a customer over a language barrier.";
+  if(has('industry','trade','plumber','lawn','hvac','electric','clean','who is it for')) return "I'm tuned for trades like plumbing, lawn care, HVAC, electrical, and cleaning — I speak your customers' language and ask the right questions for the work you do.";
+  if(has('setup','how long','get started','install','onboard')) return "Setup is on us, and I'm usually live on your existing phone line within 48 hours. No tech skills needed on your end.";
+  if(has('demo','try','test','example')) return "You're talking to the demo right now! This is roughly how I'd sound on your line — friendly, quick, and ready to book the job.";
+  if(has('thank','thanks','bye','great','awesome')) return "Anytime! If you'd like, I can show you how I'd book a real appointment next.";
+  return "Good question. In short — I answer every call, qualify the lead, book the job, and follow up by text and email, all day and night. Ask me about pricing, booking, or how I'd handle your trade.";
+}
+async function askAnthropic(){
+  const r=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'content-type':'application/json','x-api-key':S.anthKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify({model:S.anthModel||'claude-3-5-sonnet-20241022',max_tokens:300,system:S.sys,messages:S.history.slice(-12)})
+  });
+  if(!r.ok) throw new Error('HTTP '+r.status);
+  const d=await r.json();
+  return (d.content||[]).filter(c=>c.type==='text').map(c=>c.text).join(' ');
+}
+async function askCustom(){
+  const msgs=[{role:'system',content:S.sys},...S.history.slice(-12)];
+  const headers={'content-type':'application/json'}; if(S.cuKey) headers['authorization']='Bearer '+S.cuKey;
+  const r=await fetch(S.cuUrl,{method:'POST',headers,body:JSON.stringify({model:S.cuModel||'default',messages:msgs,max_tokens:300,stream:false})});
+  if(!r.ok) throw new Error('HTTP '+r.status);
+  const d=await r.json();
+  return d.choices?.[0]?.message?.content || d.message?.content || d.content || '';
+}
+async function askOpenRouter(){
+  const msgs=[{role:'system',content:S.sys},...S.history.slice(-12)];
+  const r=await fetch('https://openrouter.ai/api/v1/chat/completions',{
+    method:'POST',
+    headers:{'content-type':'application/json','authorization':'Bearer '+S.orKey,'HTTP-Referer':location.href,'X-Title':'Aria Demo'},
+    body:JSON.stringify({model:S.orModel||'openai/gpt-4o-mini',messages:msgs,max_tokens:300})
+  });
+  if(!r.ok) throw new Error('OpenRouter '+r.status);
+  const d=await r.json();
+  return d.choices?.[0]?.message?.content || '';
+}
+
+/* ---------- speaking (TTS) ---------- */
+function stopSpeaking(){ try{window.speechSynthesis.cancel();}catch(e){} if(currentAudio){currentAudio.pause();currentAudio=null;} stopBtn.style.display='none'; }
+async function speak(text){
+  setMode('speaking'); stopBtn.style.display='inline-block';
+  try{
+    if(S.ttsEngine==='eleven' && S.elKey){ await speakEleven(text); }
+    else { await speakBrowser(text); }
+  }catch(e){ /* if eleven fails, fall back */ try{ await speakBrowser(text);}catch(_){} }
+  stopBtn.style.display='none';
+}
+function speakBrowser(text){
+  return new Promise(res=>{
+    try{
+      window.speechSynthesis.cancel();
+      const u=new SpeechSynthesisUtterance(text);
+      const vs=window.speechSynthesis.getVoices();
+      const pick=vs.find(v=>/female|samantha|jenny|aria|zira|google us english/i.test(v.name)&&/en/i.test(v.lang))||vs.find(v=>/en/i.test(v.lang));
+      if(pick) u.voice=pick;
+      u.rate=1.04; u.pitch=1.08;
+      u.onend=res; u.onerror=res;
+      window.speechSynthesis.speak(u);
+    }catch(e){ res(); }
+  });
+}
+async function speakEleven(text){
+  ensureAudio();
+  const r=await fetch('https://api.elevenlabs.io/v1/text-to-speech/'+(S.elVoice||'21m00Tcm4TlvDq8ikWAM'),{
+    method:'POST',
+    headers:{'xi-api-key':S.elKey,'content-type':'application/json','accept':'audio/mpeg'},
+    body:JSON.stringify({text,model_id:'eleven_turbo_v2_5',voice_settings:{stability:0.4,similarity_boost:0.8}})
+  });
+  if(!r.ok) throw new Error('ElevenLabs '+r.status);
+  const blob=await r.blob(); const url=URL.createObjectURL(blob);
+  const audio=new Audio(url); currentAudio=audio;
+  const src=audioCtx.createMediaElementSource(audio);
+  analyser=audioCtx.createAnalyser(); analyser.fftSize=512; ampData=new Uint8Array(analyser.fftSize);
+  src.connect(analyser); analyser.connect(audioCtx.destination);
+  await audio.play();
+  await new Promise(res=>{ audio.onended=res; audio.onerror=res; });
+  URL.revokeObjectURL(url); currentAudio=null;
+}
+
+/* ---------- listening (speech-to-text) ---------- */
+let recog=null, recogOK=('webkitSpeechRecognition' in window)||('SpeechRecognition' in window);
+function makeRecog(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  const r=new SR(); r.lang='en-US'; r.interimResults=false; r.continuous=false; r.maxAlternatives=1;
+  r.onresult=e=>{ const t=e.results[0][0].transcript; handleTurn(t); };
+  r.onerror=()=>{};
+  r.onend=()=>{ if(S.listening && !S.busy){ try{r.start();}catch(e){} } };
+  return r;
+}
+async function startListening(){
+  if(!recogOK){ alert('Live speech-to-text needs Chrome or Edge. You can still type to Aria below.'); return; }
+  ensureAudio(); await ensureMicAnalyser();
+  S.listening=true; setMode('listening');
+  if(!recog) recog=makeRecog();
+  try{ recog.start(); }catch(e){}
+}
+function stopListening(){ S.listening=false; if(recog){try{recog.stop();}catch(e){}} setMode(S.busy?'thinking':'idle'); }
+
+/* ---------- wiring ---------- */
+micBtn.onclick=()=>{ ensureAudio(); S.listening? stopListening() : startListening(); };
+sendBtn.onclick=()=>{ const v=textIn.value; textIn.value=''; ensureAudio(); handleTurn(v); };
+textIn.addEventListener('keydown',e=>{ if(e.key==='Enter'){ const v=textIn.value; textIn.value=''; ensureAudio(); handleTurn(v); }});
+stopBtn.onclick=stopSpeaking;
+
+/* settings drawer */
+const drawer=$('drawer'), scrim=$('scrim');
+function openDrawer(){ drawer.classList.add('open'); scrim.classList.add('open'); }
+function closeDrawer(){ drawer.classList.remove('open'); scrim.classList.remove('open'); }
+$('gear').onclick=openDrawer; scrim.onclick=closeDrawer;
+if(!recogOK) $('browserWarn').style.display='block';
+
+// segmented controls
+function seg(id, key, valAttr, onChange){
+  document.querySelectorAll('#'+id+' button').forEach(b=>b.onclick=()=>{
+    document.querySelectorAll('#'+id+' button').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active'); onChange(b.getAttribute(valAttr));
+  });
+}
+seg('ttsSeg','tts','data-v',v=>{ $('elevenFields').style.display = v==='eleven'?'block':'none'; });
+seg('brainSeg','brain','data-b',v=>{
+  $('anthFields').style.display=v==='anthropic'?'block':'none';
+  $('orFields').style.display=v==='openrouter'?'block':'none';
+  $('customFields').style.display=v==='custom'?'block':'none';
+});
+
+// prefill from CONFIG
+(function prefill(){
+  $('elKey').value=CONFIG.elevenKey; $('elVoice').value=CONFIG.elevenVoice;
+  $('anthKey').value=CONFIG.anthKey; $('anthModel').value=CONFIG.anthModel;
+  $('orKey').value=CONFIG.orKey; $('orModel').value=CONFIG.orModel;
+  $('cuUrl').value=CONFIG.customUrl; $('cuKey').value=CONFIG.customKey; $('cuModel').value=CONFIG.customModel;
+  // set active segs
+  document.querySelector('#ttsSeg button[data-v="'+CONFIG.ttsEngine+'"]')?.click();
+  document.querySelector('#brainSeg button[data-b="'+CONFIG.brain+'"]')?.click();
+})();
+
+$('saveBtn').onclick=()=>{
+  S.ttsEngine=document.querySelector('#ttsSeg button.active').getAttribute('data-v');
+  S.elKey=$('elKey').value.trim(); S.elVoice=$('elVoice').value.trim();
+  S.brain=document.querySelector('#brainSeg button.active').getAttribute('data-b');
+  S.anthKey=$('anthKey').value.trim(); S.anthModel=$('anthModel').value.trim();
+  S.orKey=$('orKey').value.trim(); S.orModel=$('orModel').value.trim();
+  S.cuUrl=$('cuUrl').value.trim(); S.cuKey=$('cuKey').value.trim(); S.cuModel=$('cuModel').value.trim();
+  S.sys=$('sysPrompt').value.trim();
+  // engine reset for tts amplitude path
+  analyser=null;
+  const tags={demo:'built-in Aria brain',anthropic:'Anthropic',openrouter:'OpenRouter ('+(S.orModel||'gpt-4o-mini')+')',custom:'your endpoint'};
+  const voice = S.ttsEngine==='eleven'?'ElevenLabs voice':'browser voice';
+  $('hint').textContent='Using '+voice+' · '+(tags[S.brain]||'demo');
+  closeDrawer();
+};
+S.sys=$('sysPrompt').value.trim();
+// load voices (some browsers populate async)
+window.speechSynthesis && (window.speechSynthesis.onvoiceschanged=()=>{});
+</script>
+</body>
+</html>
