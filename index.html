@@ -1,0 +1,582 @@
+<!--
+  ARIA — Pitch Deck (single-file, present-ready)
+  =================================================
+  HOW TO USE IN YOUR MEETING:
+   • Open this file in any browser, hit fullscreen (F11).
+   • Scroll, or use ARROW KEYS / SPACE to move slide-to-slide.
+   • Click the dots on the right to jump.
+
+  >>> SET YOUR DEMO LINK HERE <<<  (search "DEMO_URL" in the <script> at the bottom)
+       DEMO_URL   = the website that runs/triggers your live demo
+       DEMO_PHONE = optional "call Aria now" number (leave blank to hide)
+
+  Pricing is placeholder/market-reasonable — tweak the numbers in slide 8 to taste.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aria — AI Voice Agent · Pitch</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0b0a0f;
+    --ink-2:#13111b;
+    --surface:#17141f;
+    --surface-2:#1d1a28;
+    --line:rgba(255,255,255,.09);
+    --line-strong:rgba(255,255,255,.16);
+    --cream:#f5f1e9;
+    --muted:#9b93a8;
+    --muted-2:#6f6880;
+    --coral:#ff5c38;
+    --coral-soft:#ff8164;
+    --violet:#7c5cff;
+    --mint:#6ee7b7;
+    --gold:#ffcb57;
+    --r:18px;
+    --maxw:1180px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--ink);
+    color:var(--cream);
+    font-family:'Plus Jakarta Sans',system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  ::selection{background:var(--coral);color:#1a0f0a}
+
+  /* ---------- Atmosphere ---------- */
+  .bg-glow{position:fixed;inset:0;z-index:0;pointer-events:none}
+  .bg-glow::before,.bg-glow::after{content:"";position:absolute;border-radius:50%;filter:blur(120px);opacity:.5}
+  .bg-glow::before{width:55vw;height:55vw;top:-15vw;right:-12vw;background:radial-gradient(circle,rgba(255,92,56,.45),transparent 60%)}
+  .bg-glow::after{width:50vw;height:50vw;bottom:-18vw;left:-14vw;background:radial-gradient(circle,rgba(124,92,255,.42),transparent 60%)}
+  .grid-overlay{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.4;
+    background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
+    background-size:64px 64px;mask-image:radial-gradient(ellipse 80% 80% at 50% 40%,#000,transparent 75%)}
+  .grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.05;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+  /* ---------- Top bar ---------- */
+  .topbar{position:fixed;top:0;left:0;right:0;z-index:50;display:flex;align-items:center;justify-content:space-between;
+    padding:18px clamp(20px,4vw,48px);backdrop-filter:blur(10px);
+    background:linear-gradient(to bottom,rgba(11,10,15,.85),transparent)}
+  .brand{display:flex;align-items:center;gap:12px;font-family:'Bricolage Grotesque';font-weight:700;font-size:22px;letter-spacing:-.02em}
+  .brand .eq{display:flex;align-items:flex-end;gap:3px;height:22px}
+  .brand .eq span{width:3px;background:var(--coral);border-radius:3px;animation:eq 1.1s ease-in-out infinite}
+  .brand .eq span:nth-child(1){height:40%;animation-delay:0s}
+  .brand .eq span:nth-child(2){height:90%;animation-delay:.15s;background:var(--coral-soft)}
+  .brand .eq span:nth-child(3){height:60%;animation-delay:.3s;background:var(--violet)}
+  .brand .eq span:nth-child(4){height:100%;animation-delay:.45s;background:var(--coral)}
+  @keyframes eq{0%,100%{transform:scaleY(.4)}50%{transform:scaleY(1)}}
+  .brand b{color:var(--cream)} .brand i{font-style:normal;color:var(--coral)}
+  .topbar .right{display:flex;align-items:center;gap:18px}
+  .slidecount{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;letter-spacing:.05em}
+  .slidecount b{color:var(--cream)}
+
+  .btn{cursor:pointer;border:none;font-family:inherit;font-weight:700;font-size:15px;
+    padding:12px 22px;border-radius:99px;text-decoration:none;display:inline-flex;align-items:center;gap:9px;
+    transition:transform .18s ease,box-shadow .18s ease,background .18s ease}
+  .btn-primary{background:var(--coral);color:#1a0f0a;box-shadow:0 8px 30px rgba(255,92,56,.35)}
+  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(255,92,56,.5)}
+  .btn-ghost{background:rgba(255,255,255,.06);color:var(--cream);border:1px solid var(--line-strong)}
+  .btn-ghost:hover{background:rgba(255,255,255,.12);transform:translateY(-2px)}
+  .btn .dot{width:8px;height:8px;border-radius:50%;background:#1a0f0a;animation:pulse 1.4s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+  /* ---------- Dot nav ---------- */
+  .dotnav{position:fixed;right:22px;top:50%;transform:translateY(-50%);z-index:50;display:flex;flex-direction:column;gap:13px}
+  .dotnav button{width:9px;height:9px;border-radius:50%;border:1px solid var(--muted-2);background:transparent;cursor:pointer;padding:0;transition:.2s}
+  .dotnav button.active{background:var(--coral);border-color:var(--coral);transform:scale(1.4);box-shadow:0 0 12px var(--coral)}
+
+  /* ---------- Slides ---------- */
+  .deck{position:relative;z-index:2;scroll-snap-type:y proximity}
+  .slide{min-height:100svh;width:100%;display:flex;align-items:center;justify-content:center;
+    padding:96px clamp(20px,5vw,64px) 64px;scroll-snap-align:start;position:relative}
+  .wrap{width:100%;max-width:var(--maxw)}
+
+  .kicker{display:inline-flex;align-items:center;gap:9px;font-size:13px;font-weight:700;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--coral);margin-bottom:20px}
+  .kicker::before{content:"";width:26px;height:2px;background:var(--coral);border-radius:2px}
+  h1{font-family:'Bricolage Grotesque';font-weight:700;line-height:.98;letter-spacing:-.03em}
+  h2{font-family:'Bricolage Grotesque';font-weight:700;line-height:1.02;letter-spacing:-.025em;
+    font-size:clamp(34px,5.4vw,62px);margin-bottom:18px}
+  .lead{font-size:clamp(17px,1.7vw,21px);color:var(--muted);line-height:1.55;max-width:62ch}
+  .accent{color:var(--coral)} .vio{color:var(--violet)} .mint{color:var(--mint)} .gold{color:var(--gold)}
+
+  /* reveal */
+  .rv{opacity:0;transform:translateY(26px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1)}
+  .slide.in .rv{opacity:1;transform:none}
+  .slide.in .rv.d1{transition-delay:.08s}.slide.in .rv.d2{transition-delay:.16s}
+  .slide.in .rv.d3{transition-delay:.24s}.slide.in .rv.d4{transition-delay:.32s}
+  .slide.in .rv.d5{transition-delay:.4s}.slide.in .rv.d6{transition-delay:.48s}
+
+  /* ---------- HERO ---------- */
+  #hero h1{font-size:clamp(52px,9vw,128px)}
+  #hero .sub{font-size:clamp(18px,2vw,24px);color:var(--muted);margin:24px 0 8px;max-width:52ch;line-height:1.5}
+  .wave{display:flex;align-items:flex-end;gap:5px;height:90px;margin:38px 0 10px}
+  .wave span{width:6px;border-radius:6px;background:linear-gradient(var(--coral),var(--violet));animation:w 1.3s ease-in-out infinite}
+  @keyframes w{0%,100%{height:16%}50%{height:100%}}
+  .hero-cta{display:flex;gap:14px;flex-wrap:wrap;margin-top:30px}
+  .hero-tags{display:flex;gap:10px;flex-wrap:wrap;margin-top:34px}
+  .tag{font-size:13px;font-weight:600;color:var(--muted);border:1px solid var(--line);padding:8px 14px;border-radius:99px;background:rgba(255,255,255,.03)}
+  .tag b{color:var(--cream)}
+
+  /* ---------- generic grids ---------- */
+  .grid{display:grid;gap:18px}
+  .g2{grid-template-columns:repeat(2,1fr)}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  .g4{grid-template-columns:repeat(4,1fr)}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:24px;transition:.25s;position:relative;overflow:hidden}
+  .card:hover{border-color:var(--line-strong);transform:translateY(-4px);background:var(--surface-2)}
+  .card .ic{font-size:26px;margin-bottom:14px;display:block}
+  .card h3{font-family:'Bricolage Grotesque';font-size:19px;font-weight:600;margin-bottom:7px;letter-spacing:-.01em}
+  .card p{font-size:14.5px;color:var(--muted);line-height:1.5}
+
+  /* problem stats */
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:8px}
+  .stat{background:linear-gradient(160deg,var(--surface),var(--ink-2));border:1px solid var(--line);border-radius:var(--r);padding:30px 26px}
+  .stat .big{font-family:'Bricolage Grotesque';font-size:clamp(40px,5.5vw,64px);font-weight:700;line-height:1;letter-spacing:-.03em}
+  .stat .lbl{color:var(--muted);font-size:15px;margin-top:10px;line-height:1.45}
+
+  /* flow steps */
+  .flow{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:10px;position:relative}
+  .step{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:24px 20px;position:relative}
+  .step .n{font-family:'Bricolage Grotesque';font-size:14px;font-weight:700;color:var(--ink);background:var(--coral);
+    width:34px;height:34px;border-radius:50%;display:grid;place-items:center;margin-bottom:16px}
+  .step h3{font-family:'Bricolage Grotesque';font-size:18px;margin-bottom:7px}
+  .step p{font-size:14px;color:var(--muted);line-height:1.5}
+  .step::after{content:"→";position:absolute;right:-12px;top:50%;transform:translateY(-50%);color:var(--coral);font-size:20px;z-index:3}
+  .step:last-child::after{display:none}
+
+  /* capability list */
+  .caps{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  .cap{display:flex;gap:16px;align-items:flex-start;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 20px;transition:.22s}
+  .cap:hover{border-color:var(--coral);background:var(--surface-2)}
+  .cap .e{font-size:24px;flex-shrink:0;width:44px;height:44px;border-radius:11px;display:grid;place-items:center;
+    background:rgba(255,92,56,.12);border:1px solid rgba(255,92,56,.25)}
+  .cap h3{font-family:'Bricolage Grotesque';font-size:17px;font-weight:600;margin-bottom:4px}
+  .cap p{font-size:13.5px;color:var(--muted);line-height:1.45}
+
+  /* comparison table */
+  .cmp{width:100%;border-collapse:separate;border-spacing:0;font-size:15px;border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+  .cmp th,.cmp td{padding:15px 16px;text-align:left;border-bottom:1px solid var(--line)}
+  .cmp thead th{background:var(--ink-2);font-family:'Bricolage Grotesque';font-size:15px;font-weight:600}
+  .cmp thead th.us{background:linear-gradient(160deg,rgba(255,92,56,.25),rgba(255,92,56,.08));color:var(--cream)}
+  .cmp td.us{background:rgba(255,92,56,.06)}
+  .cmp tbody tr:last-child td{border-bottom:none}
+  .cmp td:first-child,.cmp th:first-child{color:var(--muted);font-weight:600}
+  .yes{color:var(--mint);font-weight:700}.no{color:var(--muted-2)}.meh{color:var(--gold)}
+
+  /* pricing */
+  .tiers{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;align-items:stretch}
+  .tier{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:28px 26px;display:flex;flex-direction:column}
+  .tier.feat{border-color:var(--coral);background:linear-gradient(170deg,rgba(255,92,56,.1),var(--surface) 55%);box-shadow:0 18px 60px rgba(255,92,56,.18)}
+  .tier .pop{position:absolute;top:14px;right:14px;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
+    background:var(--coral);color:#1a0f0a;padding:5px 11px;border-radius:99px}
+  .tier{position:relative}
+  .tier .tname{font-family:'Bricolage Grotesque';font-size:15px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--coral)}
+  .tier.feat .tname{color:var(--coral-soft)}
+  .tier .tagl{font-size:13px;color:var(--muted);margin:4px 0 16px;min-height:34px}
+  .tier .price{font-family:'Bricolage Grotesque';font-size:42px;font-weight:700;letter-spacing:-.02em;line-height:1}
+  .tier .price small{font-size:15px;color:var(--muted);font-family:'Plus Jakarta Sans';font-weight:500}
+  .tier ul{list-style:none;margin:20px 0;display:flex;flex-direction:column;gap:11px;flex:1}
+  .tier li{font-size:14px;color:var(--cream);display:flex;gap:10px;align-items:flex-start;line-height:1.4}
+  .tier li::before{content:"✓";color:var(--mint);font-weight:800;flex-shrink:0}
+  .tier li.dim{color:var(--muted-2)} .tier li.dim::before{content:"—";color:var(--muted-2)}
+  .finehint{font-size:13px;color:var(--muted-2);margin-top:18px;text-align:center}
+
+  /* differentiators row */
+  .diffs{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:10px}
+  .diff{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:24px 20px}
+  .diff .e{font-size:28px;margin-bottom:12px}
+  .diff h3{font-family:'Bricolage Grotesque';font-size:17px;font-weight:600;margin-bottom:6px;line-height:1.15}
+  .diff p{font-size:13.5px;color:var(--muted);line-height:1.45}
+
+  /* minutes badge on pricing cards */
+  .mins{margin:14px 0 2px;padding:12px 14px;border:1px dashed var(--line-strong);border-radius:12px;background:rgba(255,255,255,.03)}
+  .mins .m-top{font-family:'Bricolage Grotesque';font-size:22px;font-weight:700;letter-spacing:-.01em;line-height:1}
+  .mins .m-top span{font-size:13px;color:var(--muted);font-weight:500;font-family:'Plus Jakarta Sans'}
+  .mins .m-calls{font-size:12.5px;color:var(--muted);margin-top:4px}
+  .mins .m-over{font-size:12.5px;color:var(--coral-soft);font-weight:600;margin-top:6px}
+  .tier.feat .mins{border-color:rgba(255,92,56,.4)}
+
+  /* close slide */
+  #close{text-align:center}
+  #close h2{font-size:clamp(40px,7vw,84px)}
+  #close .lead{margin:18px auto 0}
+  .close-cta{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:36px}
+  .close-card{margin-top:40px;display:inline-flex;gap:30px;flex-wrap:wrap;justify-content:center;
+    border:1px solid var(--line);border-radius:var(--r);padding:22px 32px;background:var(--surface)}
+  .close-card div b{display:block;font-size:13px;color:var(--muted);font-weight:600;letter-spacing:.04em;text-transform:uppercase}
+  .close-card div span{font-family:'Bricolage Grotesque';font-size:18px}
+
+  .secthead{margin-bottom:30px;max-width:70ch}
+
+  /* embedded live demo */
+  .embed{margin-top:26px;border:1px solid var(--line-2);border-radius:22px;overflow:hidden;
+    background:var(--surface);box-shadow:0 30px 90px rgba(0,0,0,.5);height:min(62vh,560px)}
+  .embed iframe{width:100%;height:100%;border:none;display:block}
+
+  /* responsive */
+  @media (max-width:900px){
+    .g4,.g3,.flow,.diffs{grid-template-columns:repeat(2,1fr)}
+    .caps,.g2,.stats,.tiers{grid-template-columns:1fr}
+    .step::after{display:none}
+    .dotnav{display:none}
+    .cmp{font-size:13px} .cmp th,.cmp td{padding:11px 9px}
+    .topbar .right .btn-ghost{display:none}
+  }
+</style>
+</head>
+<body>
+<div class="bg-glow"></div>
+<div class="grid-overlay"></div>
+<div class="grain"></div>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="eq"><span></span><span></span><span></span><span></span></span>
+    <span><b>Aria</b></span>
+  </div>
+  <div class="right">
+    <span class="slidecount"><b id="cur">01</b> / <span id="tot">09</span></span>
+    <a class="btn btn-primary demo-link" href="#"><span class="dot"></span>Try Live Demo</a>
+  </div>
+</header>
+
+<nav class="dotnav" id="dotnav"></nav>
+
+<main class="deck" id="deck">
+
+  <!-- 1 · HERO -->
+  <section class="slide" id="hero">
+    <div class="wrap">
+      <span class="kicker rv">AI Voice Agent · Built for local service businesses</span>
+      <h1 class="rv d1">Never miss<br>another <span class="accent">lead.</span></h1>
+      <div class="wave rv d2" id="wave"></div>
+      <p class="sub rv d3">Aria is the AI voice agent that answers every call, books the job, texts the customer, and hands you the hot ones — <b style="color:var(--cream)">24/7, while you're on the tools.</b></p>
+      <div class="hero-cta rv d4">
+        <a class="btn btn-primary demo-link" href="#"><span class="dot"></span>Hear Aria live</a>
+        <a class="btn btn-ghost" href="#problem">See the pitch ↓</a>
+      </div>
+      <div class="hero-tags rv d5">
+        <span class="tag">📞 Answers in <b>1 ring</b></span>
+        <span class="tag">📅 Books on the call</span>
+        <span class="tag">💬 Instant SMS follow-up</span>
+        <span class="tag">📞 Warm transfers hot leads</span>
+        <span class="tag">⚡ Live in <b>48 hrs</b></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 · PROBLEM -->
+  <section class="slide" id="problem">
+    <div class="wrap">
+      <div class="secthead">
+        <span class="kicker rv">The problem</span>
+        <h2 class="rv d1">A missed call is a<br><span class="accent">missed job.</span></h2>
+        <p class="lead rv d2">Plumbers, landscapers, electricians, cleaners — you're under a sink or on a roof when the phone rings. The caller doesn't leave a voicemail. They just call the next guy.</p>
+      </div>
+      <div class="stats">
+        <div class="stat rv d2"><div class="big accent">62%</div><div class="lbl">of calls to small service businesses go <b style="color:var(--cream)">unanswered</b></div></div>
+        <div class="stat rv d3"><div class="big">85%</div><div class="lbl">of callers who hit voicemail <b style="color:var(--cream)">never call back</b> — they hire whoever picks up</div></div>
+        <div class="stat rv d4"><div class="big vio">$1,200+</div><div class="lbl">average value of a single missed service job, every time it slips away</div></div>
+      </div>
+      <p class="lead rv d5" style="margin-top:26px">A human receptionist costs <b class="accent">$3,000+/month</b> and goes home at 5pm. Voicemail just loses you the lead politely.</p>
+    </div>
+  </section>
+
+  <!-- 3 · MEET ARIA -->
+  <section class="slide" id="meet">
+    <div class="wrap">
+      <div class="grid g2" style="align-items:center;gap:48px">
+        <div>
+          <span class="kicker rv">Meet Aria</span>
+          <h2 class="rv d1">Your AI front desk<br>that <span class="accent">never clocks out.</span></h2>
+          <p class="lead rv d2">Aria picks up on the first ring — day, night, weekend, holiday. She sounds human, knows your business, and doesn't just <i>answer</i> the call. She <b style="color:var(--cream)">does the work</b>: qualifies the lead, books the appointment, and follows up by text — all before you've wiped your hands.</p>
+          <p class="lead rv d3" style="margin-top:18px">No app for your customers. No new number to learn. It's just your phone line — answered, every time, by an agent trained on your trade.</p>
+        </div>
+        <div class="grid" style="gap:14px">
+          <div class="card rv d2"><span class="ic">🎙️</span><h3>Sounds human</h3><p>Natural voice, real conversation — most callers never know it's AI.</p></div>
+          <div class="card rv d3"><span class="ic">🧠</span><h3>Knows your business</h3><p>Your services, hours, service area, pricing and FAQs — answered correctly.</p></div>
+          <div class="card rv d4"><span class="ic">🤝</span><h3>Hands off to you</h3><p>Hot lead or emergency? She warm-transfers straight to your cell or crew.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 · WHAT ARIA DOES (tool calling) -->
+  <section class="slide" id="caps">
+    <div class="wrap">
+      <div class="secthead">
+        <span class="kicker rv">What Aria does on a call</span>
+        <h2 class="rv d1">She doesn't just talk.<br>She <span class="accent">takes action.</span></h2>
+        <p class="lead rv d2">Every one of these is a real tool Aria can fire <i>mid-conversation</i> — not a promise to "pass along a message."</p>
+      </div>
+      <div class="caps">
+        <div class="cap rv d2"><div class="e">📅</div><div><h3>Books the appointment</h3><p>Checks your live calendar and locks in the slot while the customer is still on the line.</p></div></div>
+        <div class="cap rv d2"><div class="e">💬</div><div><h3>Texts the customer</h3><p>Instant SMS — confirmation, your address, a quote, or a booking link.</p></div></div>
+        <div class="cap rv d3"><div class="e">📧</div><div><h3>Emails you the lead</h3><p>Full call summary in your inbox: name, number, job type, urgency, address.</p></div></div>
+        <div class="cap rv d3"><div class="e">📞</div><div><h3>Transfers to a live person</h3><p>Warm-transfers emergencies & high-value jobs straight to you or an on-call tech.</p></div></div>
+        <div class="cap rv d4"><div class="e">📝</div><div><h3>Qualifies & captures</h3><p>Asks the right questions, scores the lead, logs everything to your CRM.</p></div></div>
+        <div class="cap rv d4"><div class="e">🔁</div><div><h3>Calls them back</h3><p>Outbound follow-ups, appointment reminders & win-back campaigns. <span class="gold">(Growth)</span></p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 · HOW IT WORKS -->
+  <section class="slide" id="how">
+    <div class="wrap">
+      <div class="secthead">
+        <span class="kicker rv">How it works</span>
+        <h2 class="rv d1">From ring to <span class="accent">booked job</span> in one call.</h2>
+      </div>
+      <div class="flow">
+        <div class="step rv d2"><div class="n">1</div><h3>Aria answers</h3><p>First ring, your business name, a warm human-sounding hello.</p></div>
+        <div class="step rv d3"><div class="n">2</div><h3>She qualifies</h3><p>Captures the job, urgency, location & contact — and answers their questions.</p></div>
+        <div class="step rv d4"><div class="n">3</div><h3>She acts</h3><p>Books the slot, texts a confirmation, or transfers you the hot lead.</p></div>
+        <div class="step rv d5"><div class="n">4</div><h3>You're updated</h3><p>Lead + summary lands in your inbox/CRM. Nothing falls through the cracks.</p></div>
+      </div>
+      <p class="lead rv d6" style="margin-top:30px;text-align:center;max-width:none">Setup is on us. <b class="accent">You keep working.</b> Aria's live on your line in about 48 hours.</p>
+    </div>
+  </section>
+
+  <!-- 6 · USE CASES -->
+  <section class="slide" id="trades">
+    <div class="wrap">
+      <div class="secthead">
+        <span class="kicker rv">Built for your trade</span>
+        <h2 class="rv d1">One agent. <span class="accent">Every service business.</span></h2>
+        <p class="lead rv d2">Aria is tuned per industry — she speaks the language and asks the right questions for the work you do.</p>
+      </div>
+      <div class="grid g4">
+        <div class="card rv d2"><span class="ic">🔧</span><h3>Plumbing</h3><p>Emergency triage, after-hours leaks, booking & dispatch.</p></div>
+        <div class="card rv d2"><span class="ic">🌿</span><h3>Lawn &amp; Landscaping</h3><p>Quote requests, recurring schedules, seasonal upsells.</p></div>
+        <div class="card rv d3"><span class="ic">❄️</span><h3>HVAC</h3><p>No-heat/no-cool urgency, maintenance plans, service windows.</p></div>
+        <div class="card rv d3"><span class="ic">⚡</span><h3>Electrical</h3><p>Safety triage, estimates, permit-job intake & scheduling.</p></div>
+        <div class="card rv d4"><span class="ic">🧹</span><h3>Cleaning</h3><p>Recurring bookings, square-footage quotes, reschedules.</p></div>
+        <div class="card rv d4"><span class="ic">🪲</span><h3>Pest Control</h3><p>Inspection bookings, treatment plans, follow-up visits.</p></div>
+        <div class="card rv d5"><span class="ic">🏠</span><h3>Roofing</h3><p>Storm-damage intake, inspection scheduling, insurance leads.</p></div>
+        <div class="card rv d5"><span class="ic">🛠️</span><h3>&amp; any handyman</h3><p>If you take calls and book jobs — Aria fits.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7 · WHY ARIA WINS -->
+  <section class="slide" id="why">
+    <div class="wrap">
+      <div class="secthead">
+        <span class="kicker rv">Why Aria wins</span>
+        <h2 class="rv d1">Stack her up against<br>the <span class="accent">alternatives.</span></h2>
+      </div>
+      <table class="cmp rv d2">
+        <thead>
+          <tr><th></th><th class="us">Aria</th><th>Voicemail</th><th>Human receptionist</th><th>Generic answering svc</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Answers 24/7 / weekends</td><td class="us yes">✓</td><td class="no">✗</td><td class="no">✗</td><td class="meh">~</td></tr>
+          <tr><td>Books the job on the call</td><td class="us yes">✓</td><td class="no">✗</td><td class="meh">~</td><td class="no">✗</td></tr>
+          <tr><td>Instant SMS + email follow-up</td><td class="us yes">✓</td><td class="no">✗</td><td class="no">✗</td><td class="no">✗</td></tr>
+          <tr><td>Warm-transfers hot leads to you</td><td class="us yes">✓</td><td class="no">✗</td><td class="yes">✓</td><td class="meh">~</td></tr>
+          <tr><td>Trained on YOUR trade</td><td class="us yes">✓</td><td class="no">✗</td><td class="meh">~</td><td class="no">✗</td></tr>
+          <tr><td>Monthly cost</td><td class="us yes">$</td><td class="yes">free</td><td class="no">$$$$</td><td class="meh">$$$</td></tr>
+        </tbody>
+      </table>
+      <div class="diffs" style="margin-top:24px">
+        <div class="diff rv d3"><div class="e">⚡</div><h3>It acts, not just answers</h3><p>Books, texts, transfers — real outcomes, not just messages.</p></div>
+        <div class="diff rv d3"><div class="e">🎯</div><h3>Trade-specific</h3><p>Speaks plumber, lawn-care, HVAC — knows your services & area.</p></div>
+        <div class="diff rv d4"><div class="e">💵</div><h3>Pays for itself</h3><p>One saved job a month covers it. Most save several a week.</p></div>
+        <div class="diff rv d4"><div class="e">🚀</div><h3>Zero tech skills</h3><p>We set it up on your existing line. Live in 48 hours.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8 · PACKAGES -->
+  <section class="slide" id="pricing">
+    <div class="wrap">
+      <div class="secthead">
+        <span class="kicker rv">Packages</span>
+        <h2 class="rv d1">Simple plans that<br><span class="accent">scale with you.</span></h2>
+      </div>
+      <div class="tiers">
+        <!-- TIER 1 -->
+        <div class="tier rv d2">
+          <div class="tname">Starter</div>
+          <div class="tagl">Never miss a lead.</div>
+          <div class="price">$149<small>/mo</small></div>
+          <div class="mins">
+            <div class="m-top">300 <span>talk-minutes</span></div>
+            <div class="m-calls">≈ 100 calls/mo at ~3 min each</div>
+            <div class="m-over">then $0.45 / extra minute</div>
+          </div>
+          <ul>
+            <li>24/7 call answering</li>
+            <li>Lead capture & qualifying</li>
+            <li>Instant SMS follow-up</li>
+            <li>Email lead summaries</li>
+            <li>FAQs, hours & service area</li>
+            <li>1 phone number</li>
+            <li class="dim">Appointment booking</li>
+            <li class="dim">Live warm transfer</li>
+          </ul>
+          <a class="btn btn-ghost" href="#close">Choose Starter</a>
+        </div>
+        <!-- TIER 2 -->
+        <div class="tier feat rv d3">
+          <span class="pop">Most popular</span>
+          <div class="tname">Professional</div>
+          <div class="tagl">Book jobs while you work.</div>
+          <div class="price">$349<small>/mo</small></div>
+          <div class="mins">
+            <div class="m-top">900 <span>talk-minutes</span></div>
+            <div class="m-calls">≈ 300 calls/mo at ~3 min each</div>
+            <div class="m-over">then $0.39 / extra minute</div>
+          </div>
+          <ul>
+            <li><b>Everything in Starter</b></li>
+            <li>📅 Calendar booking on the call</li>
+            <li>📞 Live warm transfer to your cell</li>
+            <li>CRM logging & lead scoring</li>
+            <li>Custom voice, script & greeting</li>
+            <li>Bilingual handling (EN/FR)</li>
+          </ul>
+          <a class="btn btn-primary" href="#close">Choose Professional</a>
+        </div>
+        <!-- TIER 3 -->
+        <div class="tier rv d4">
+          <div class="tname">Growth</div>
+          <div class="tagl">Your outbound growth engine.</div>
+          <div class="price">$699<small>/mo</small></div>
+          <div class="mins">
+            <div class="m-top">2,000 <span>talk-minutes</span></div>
+            <div class="m-calls">≈ 650 calls/mo · inbound + outbound</div>
+            <div class="m-over">then $0.30 / extra minute</div>
+          </div>
+          <ul>
+            <li><b>Everything in Professional</b></li>
+            <li>🔁 Outbound follow-ups & reminders</li>
+            <li>Win-back / reactivation campaigns</li>
+            <li>Multi-location & multi-number</li>
+            <li>Analytics dashboard</li>
+            <li>Custom integrations</li>
+            <li>Dedicated success manager</li>
+          </ul>
+          <a class="btn btn-ghost" href="#close">Talk to us</a>
+        </div>
+      </div>
+      <p class="finehint rv d5">Billed by talk-minute (avg call ~3 min) · One-time setup from $299 · Live in 48 hrs · Cancel anytime<br>Compare: a major incumbent's AI receptionist includes just 100 minutes, then charges $0.50/min. Aria gives you 3× the minutes for less.</p>
+    </div>
+  </section>
+
+  <!-- 9 · LIVE DEMO (embedded avatar) -->
+  <section class="slide" id="live">
+    <div class="wrap" style="max-width:980px">
+      <div style="text-align:center">
+        <span class="kicker rv" style="justify-content:center">Live demo</span>
+        <h2 class="rv d1">This isn't a slide.<br><span class="accent">It's Aria. Say hi.</span></h2>
+      </div>
+      <div class="embed rv d2">
+        <iframe src="aria-voice-avatar.html" title="Talk to Aria" allow="microphone; autoplay; clipboard-write" loading="lazy"></iframe>
+      </div>
+      <p class="finehint rv d3">Click the mic and talk (Chrome/Edge), or type to her. <a class="demo-link" href="#" style="color:var(--coral-soft);font-weight:700">Open full demo ↗</a> for the best mic experience.</p>
+    </div>
+  </section>
+
+  <!-- 10 · CLOSE / DEMO -->
+  <section class="slide" id="close">
+    <div class="wrap">
+      <span class="kicker rv" style="justify-content:center">See it for yourself</span>
+      <h2 class="rv d1">Don't take our word.<br><span class="accent">Hear Aria answer.</span></h2>
+      <p class="lead rv d2">Click below to talk to Aria live — book a fake appointment, ask her a question, get a text back. The same agent your customers will hear.</p>
+      <div class="close-cta rv d3">
+        <a class="btn btn-primary demo-link" href="#" style="font-size:17px;padding:16px 30px"><span class="dot"></span>Launch the live demo</a>
+        <a class="btn btn-ghost demo-call" href="#" style="font-size:17px;padding:16px 30px">📞 Call Aria now</a>
+      </div>
+      <div class="close-card rv d4">
+        <div><b>Get started</b><span class="accent">Live in 48 hours</span></div>
+        <div><b>Contact</b><span id="contact-email">hello@aria.ai</span></div>
+        <div><b>Web</b><span id="contact-web">aria.ai</span></div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+/* =======================================================================
+   >>>>>>>>>>  EDIT THESE BEFORE YOUR MEETING  <<<<<<<<<<
+   ======================================================================= */
+  const DEMO_URL   = "aria-voice-avatar.html";       // ← opens the live talking-Aria demo (keep both files in the same folder). Change to an external URL if you prefer.
+  const DEMO_PHONE = "";                              // ← e.g. "+19025551234"  (leave "" to hide the "Call Aria" button)
+  const CONTACT_EMAIL = "hello@aria.ai";              // ← your contact email
+  const CONTACT_WEB   = "aria.ai";                    // ← your website
+/* ===================================================================== */
+
+  // Wire up demo links
+  document.querySelectorAll('.demo-link').forEach(a=>{
+    a.href = DEMO_URL; a.target = "_blank"; a.rel = "noopener";
+  });
+  // Optional "Call Aria" phone button
+  const callBtn = document.querySelector('.demo-call');
+  if(DEMO_PHONE){ callBtn.href = "tel:"+DEMO_PHONE; }
+  else { callBtn.style.display = "none"; }
+  document.getElementById('contact-email').textContent = CONTACT_EMAIL;
+  document.getElementById('contact-web').textContent   = CONTACT_WEB;
+
+  // Build hero waveform bars
+  const wave = document.getElementById('wave');
+  for(let i=0;i<46;i++){
+    const s=document.createElement('span');
+    s.style.animationDelay=(i*0.045).toFixed(2)+'s';
+    s.style.animationDuration=(0.9+ (i%5)*0.12).toFixed(2)+'s';
+    wave.appendChild(s);
+  }
+
+  // Slides + dot nav
+  const slides=[...document.querySelectorAll('.slide')];
+  const tot=slides.length;
+  document.getElementById('tot').textContent=String(tot).padStart(2,'0');
+  const dotnav=document.getElementById('dotnav');
+  slides.forEach((sl,i)=>{
+    const b=document.createElement('button');
+    b.title=sl.id;
+    b.onclick=()=>sl.scrollIntoView({behavior:'smooth'});
+    dotnav.appendChild(b);
+  });
+  const dots=[...dotnav.children];
+
+  // Reveal + active-state observer
+  const io=new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){
+        e.target.classList.add('in');
+        const idx=slides.indexOf(e.target);
+        dots.forEach((d,j)=>d.classList.toggle('active',j===idx));
+        document.getElementById('cur').textContent=String(idx+1).padStart(2,'0');
+      }
+    });
+  },{threshold:0.45});
+  slides.forEach(s=>io.observe(s));
+
+  // Keyboard navigation (deck-style)
+  let idx=0;
+  function go(n){ idx=Math.max(0,Math.min(tot-1,n)); slides[idx].scrollIntoView({behavior:'smooth'}); }
+  // keep idx synced with the active dot
+  const syncObs=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting)idx=slides.indexOf(e.target);});},{threshold:0.5});
+  slides.forEach(s=>syncObs.observe(s));
+  document.addEventListener('keydown',(e)=>{
+    if(['ArrowDown','PageDown','ArrowRight'].includes(e.key)){e.preventDefault();go(idx+1);}
+    if([' '].includes(e.key)){e.preventDefault();go(idx+1);}
+    if(['ArrowUp','PageUp','ArrowLeft'].includes(e.key)){e.preventDefault();go(idx-1);}
+    if(e.key==='Home'){e.preventDefault();go(0);}
+    if(e.key==='End'){e.preventDefault();go(tot-1);}
+  });
+</script>
+</body>
+</html>
