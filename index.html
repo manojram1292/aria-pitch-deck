@@ -225,6 +225,50 @@
   .quote .name{font-weight:700;font-size:14.5px;color:var(--cream)}
   .quote .role{font-size:13px;color:var(--muted)}
 
+  /* ---------- Pricing ---------- */
+  #pricing{background:linear-gradient(180deg,transparent,rgba(255,92,56,.04),transparent)}
+  .billing-toggle{display:inline-flex;align-items:center;gap:0;background:var(--surface);border:1px solid var(--line-strong);
+    border-radius:99px;padding:4px;margin:18px 0 8px}
+  .billing-toggle button{background:transparent;border:none;color:var(--muted);font-family:inherit;font-weight:700;font-size:14px;
+    padding:9px 18px;border-radius:99px;cursor:pointer;transition:.18s;letter-spacing:.01em}
+  .billing-toggle button.active{background:var(--coral);color:#1a0f0a;box-shadow:0 4px 14px rgba(255,92,56,.3)}
+  .billing-toggle .save{font-size:11px;font-weight:800;color:var(--mint);background:rgba(110,231,183,.15);
+    padding:3px 8px;border-radius:99px;margin-left:6px}
+  .tiers{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;align-items:stretch;margin-top:30px}
+  .tier{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:30px 28px;display:flex;flex-direction:column;position:relative;transition:.25s}
+  .tier:hover{transform:translateY(-4px);border-color:var(--line-strong)}
+  .tier.feat{border-color:var(--coral);background:linear-gradient(170deg,rgba(255,92,56,.1),var(--surface) 55%);
+    box-shadow:0 18px 60px rgba(255,92,56,.18);transform:translateY(-6px)}
+  .tier.feat:hover{transform:translateY(-10px)}
+  .tier .pop{position:absolute;top:-14px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:800;
+    letter-spacing:.12em;text-transform:uppercase;background:var(--coral);color:#1a0f0a;padding:6px 14px;border-radius:99px;
+    box-shadow:0 8px 24px rgba(255,92,56,.4)}
+  .tier .tname{font-family:'Bricolage Grotesque';font-size:15px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--coral)}
+  .tier.feat .tname{color:var(--coral-soft)}
+  .tier .tagl{font-size:13.5px;color:var(--muted);margin:6px 0 18px;min-height:36px;line-height:1.4}
+  .tier .price{font-family:'Bricolage Grotesque';font-size:46px;font-weight:700;letter-spacing:-.02em;line-height:1;display:flex;align-items:baseline;gap:6px}
+  .tier .price .num{transition:opacity .2s}
+  .tier .price small{font-size:15px;color:var(--muted);font-family:'Plus Jakarta Sans';font-weight:500}
+  .tier .billnote{font-size:12.5px;color:var(--muted-2);margin-top:6px;min-height:16px}
+  .tier .mins{margin:16px 0 4px;padding:12px 14px;border:1px dashed var(--line-strong);border-radius:12px;background:rgba(255,255,255,.03)}
+  .tier .mins .m-top{font-family:'Bricolage Grotesque';font-size:20px;font-weight:700;letter-spacing:-.01em;line-height:1}
+  .tier .mins .m-top span{font-size:13px;color:var(--muted);font-weight:500;font-family:'Plus Jakarta Sans'}
+  .tier .mins .m-meta{font-size:12.5px;color:var(--muted);margin-top:6px;line-height:1.4}
+  .tier.feat .mins{border-color:rgba(255,92,56,.4)}
+  .tier ul{list-style:none;margin:20px 0;display:flex;flex-direction:column;gap:10px;flex:1}
+  .tier li{font-size:13.5px;color:var(--cream);display:flex;gap:10px;align-items:flex-start;line-height:1.45}
+  .tier li::before{content:"✓";color:var(--mint);font-weight:800;flex-shrink:0}
+  .tier li.dim{color:var(--muted-2)} .tier li.dim::before{content:"—";color:var(--muted-2)}
+  .tier .tcta{margin-top:8px}
+  .tier .tcta .btn{width:100%;justify-content:center}
+  .enterprise{margin-top:22px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:26px 32px;
+    display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap}
+  .enterprise .e-l{display:flex;flex-direction:column;gap:4px;flex:1;min-width:260px}
+  .enterprise .e-l b{font-family:'Bricolage Grotesque';font-size:20px;color:var(--cream)}
+  .enterprise .e-l span{font-size:14px;color:var(--muted);line-height:1.5}
+  .pricing-fine{font-size:13px;color:var(--muted-2);margin-top:22px;text-align:center;line-height:1.6}
+  .pricing-fine b{color:var(--mint)}
+
   /* ---------- Security ---------- */
   .sec-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:30px}
   .sec{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:26px 24px;transition:.22s}
@@ -286,7 +330,9 @@
     section{padding:72px clamp(18px,5vw,32px)}
     #hero{padding-top:130px}
     .g4,.g3,.flow,.quotes,.sec-grid{grid-template-columns:repeat(2,1fr)}
-    .g2,.stats,.caps,.adv-grid,.impr,.diffs{grid-template-columns:1fr}
+    .g2,.stats,.caps,.adv-grid,.impr,.diffs,.tiers{grid-template-columns:1fr}
+    .tier.feat{transform:none} .tier.feat:hover{transform:translateY(-4px)}
+    .enterprise{flex-direction:column;align-items:stretch;text-align:center}
     .step::after{display:none}
     .cmp{font-size:13px} .cmp th,.cmp td{padding:11px 9px}
     /* mobile drop-down nav panel */
@@ -319,6 +365,7 @@
     <a href="#features">Features</a>
     <a href="#how">How it works</a>
     <a href="#use-cases">Use Cases</a>
+    <a href="#pricing">Pricing</a>
     <a href="#security">Security</a>
   </nav>
   <div class="right">
@@ -576,6 +623,112 @@
     </div>
   </section>
 
+  <!-- ================== PRICING ================== -->
+  <section id="pricing">
+    <div class="wrap">
+      <div class="secthead" style="text-align:center;margin-left:auto;margin-right:auto">
+        <span class="kicker rv" style="justify-content:center">Pricing</span>
+        <h2 class="rv d1">Simple plans that<br><span class="accent">pay for themselves.</span></h2>
+        <p class="lead rv d2" style="margin-left:auto;margin-right:auto">Every plan includes voice, SMS, email, real-time booking, and warm transfers. Just pick the call volume that matches your business.</p>
+        <div class="billing-toggle rv d3" role="tablist">
+          <button class="active" data-cycle="monthly">Monthly</button>
+          <button data-cycle="annual">Annual <span class="save">SAVE 20%</span></button>
+        </div>
+      </div>
+
+      <div class="tiers">
+
+        <!-- STARTER -->
+        <div class="tier rv d1">
+          <div class="tname">Starter</div>
+          <div class="tagl">For solo operators and small teams just getting started.</div>
+          <div class="price"><span>$</span><span class="num" data-monthly="199" data-annual="159">199</span><small>/mo</small></div>
+          <div class="billnote" data-monthly="Billed monthly · cancel anytime" data-annual="Billed annually · $1,908/yr">Billed monthly · cancel anytime</div>
+          <div class="mins">
+            <div class="m-top">500 <span>minutes / mo</span></div>
+            <div class="m-meta">Overage $0.25/min · 3 concurrent calls</div>
+          </div>
+          <ul>
+            <li>Inbound voice + SMS follow-up</li>
+            <li>1 phone number, 1 calendar</li>
+            <li>Email summaries to your inbox</li>
+            <li>Basic CRM sync (HubSpot, Pipedrive)</li>
+            <li>Business-hours warm transfer</li>
+            <li class="dim">Custom voice & branding</li>
+            <li class="dim">Multi-location routing</li>
+          </ul>
+          <div class="tcta">
+            <a class="btn btn-ghost demo-link" href="#cta">Start 30-day trial</a>
+          </div>
+        </div>
+
+        <!-- PROFESSIONAL -->
+        <div class="tier feat rv d2">
+          <span class="pop">Most Popular</span>
+          <div class="tname">Professional</div>
+          <div class="tagl">For growing service businesses that close on speed.</div>
+          <div class="price"><span>$</span><span class="num" data-monthly="649" data-annual="519">649</span><small>/mo</small></div>
+          <div class="billnote" data-monthly="Billed monthly · cancel anytime" data-annual="Billed annually · $6,228/yr">Billed monthly · cancel anytime</div>
+          <div class="mins">
+            <div class="m-top">1,500 <span>minutes / mo</span></div>
+            <div class="m-meta">Overage $0.22/min · 10 concurrent calls</div>
+          </div>
+          <ul>
+            <li>Everything in Starter, plus:</li>
+            <li>3 phone numbers, multi-calendar</li>
+            <li>Custom voice, script & greeting</li>
+            <li>Full two-way SMS & email follow-ups</li>
+            <li>After-hours warm transfer</li>
+            <li>Zapier & 1,000+ integrations</li>
+            <li>Analytics dashboard</li>
+          </ul>
+          <div class="tcta">
+            <a class="btn btn-primary demo-link" href="#cta"><span class="dot"></span>Book a Demo</a>
+          </div>
+        </div>
+
+        <!-- BUSINESS -->
+        <div class="tier rv d3">
+          <div class="tname">Business</div>
+          <div class="tagl">For multi-location & high-volume operations.</div>
+          <div class="price"><span>$</span><span class="num" data-monthly="1599" data-annual="1279">1,599</span><small>/mo</small></div>
+          <div class="billnote" data-monthly="Billed monthly · cancel anytime" data-annual="Billed annually · $15,348/yr">Billed monthly · cancel anytime</div>
+          <div class="mins">
+            <div class="m-top">5,000 <span>minutes / mo</span></div>
+            <div class="m-meta">Overage $0.20/min · 25 concurrent calls</div>
+          </div>
+          <ul>
+            <li>Everything in Professional, plus:</li>
+            <li>10 phone numbers, multi-location routing</li>
+            <li>HIPAA-eligible tier (BAA available)</li>
+            <li>Priority SLA & uptime guarantee</li>
+            <li>White-glove onboarding</li>
+            <li>Dedicated Customer Success Manager</li>
+            <li>Custom integrations & workflows</li>
+          </ul>
+          <div class="tcta">
+            <a class="btn btn-ghost demo-link" href="#cta">Talk to sales</a>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ENTERPRISE -->
+      <div class="enterprise rv d4">
+        <div class="e-l">
+          <b>Enterprise</b>
+          <span>15,000+ minutes, custom SLAs, on-premise telephony, dedicated infrastructure, and procurement support. Built for regulated industries and multi-brand portfolios.</span>
+        </div>
+        <a class="btn btn-primary demo-link" href="#cta"><span class="dot"></span>Contact sales</a>
+      </div>
+
+      <p class="pricing-fine rv d5">
+        💡 <b>Overage is priced cheaper than the bundle</b> on every plan — grow into the next tier without surprise bills.<br>
+        All plans include unlimited SMS to US/Canada numbers, free phone-number porting, and a 30-day money-back guarantee.
+      </p>
+    </div>
+  </section>
+
   <!-- ================== SECURITY ================== -->
   <section id="security">
     <div class="wrap">
@@ -698,6 +851,21 @@
     scrollTopBtn.classList.toggle('show', window.scrollY > 600);
   });
   scrollTopBtn.addEventListener('click', ()=>window.scrollTo({top:0,behavior:'smooth'}));
+
+  // Pricing — monthly / annual toggle
+  const billToggle = document.querySelectorAll('.billing-toggle button');
+  billToggle.forEach(b => b.addEventListener('click', () => {
+    const cycle = b.dataset.cycle;
+    billToggle.forEach(x => x.classList.toggle('active', x === b));
+    document.querySelectorAll('.tier .price .num').forEach(el => {
+      const v = el.dataset[cycle];
+      // Format with thousands separator
+      el.textContent = Number(v).toLocaleString('en-US');
+    });
+    document.querySelectorAll('.tier .billnote').forEach(el => {
+      el.textContent = el.dataset[cycle];
+    });
+  }));
 
   // Chat bubble — placeholder: opens the demo so visitors can talk to Aria right now
   document.getElementById('chatBubble').addEventListener('click', ()=>{
