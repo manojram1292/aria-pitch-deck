@@ -35,7 +35,12 @@
     --maxw:1180px;
   }
   *{box-sizing:border-box;margin:0;padding:0}
-  html{scroll-behavior:smooth}
+  /* Anchor clicks should JUMP, not animate — page is long, smooth-scroll over many viewports is painful.
+     The ↑ scroll-to-top button still calls scrollTo({behavior:'smooth'}) explicitly. */
+  html{scroll-behavior:auto;scroll-padding-top:84px}
+  @media (prefers-reduced-motion:no-preference){
+    /* keep scroll-padding so a clicked anchor isn't hidden under the sticky header */
+  }
   body{
     background:var(--ink);
     color:var(--cream);
@@ -237,12 +242,21 @@
   .roi-input:hover{border-color:var(--line-strong)}
   .roi-input label{font-size:12.5px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:10px}
   .roi-input .row{display:flex;align-items:center;gap:16px}
-  .roi-input input[type=range]{flex:1;height:6px;-webkit-appearance:none;appearance:none;background:var(--ink-2);
-    border-radius:99px;outline:none;accent-color:var(--coral)}
-  .roi-input input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:22px;height:22px;
-    border-radius:50%;background:var(--coral);cursor:pointer;border:3px solid var(--ink);box-shadow:0 4px 12px rgba(255,92,56,.5)}
-  .roi-input input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--coral);
-    cursor:pointer;border:3px solid var(--ink);box-shadow:0 4px 12px rgba(255,92,56,.5)}
+  /* Range slider — big 32px hit area, 10px visual track, 26px thumb. Fat = drag-friendly on mobile + desktop. */
+  .roi-input input[type=range]{flex:1;height:32px;-webkit-appearance:none;appearance:none;background:transparent;
+    outline:none;accent-color:var(--coral);cursor:pointer;margin:0;padding:0;touch-action:none}
+  .roi-input input[type=range]::-webkit-slider-runnable-track{height:10px;background:var(--ink-2);border-radius:99px;
+    border:1px solid var(--line)}
+  .roi-input input[type=range]::-moz-range-track{height:10px;background:var(--ink-2);border-radius:99px;border:1px solid var(--line)}
+  .roi-input input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:26px;height:26px;
+    margin-top:-9px;border-radius:50%;background:var(--coral);cursor:grab;border:3px solid var(--ink);
+    box-shadow:0 4px 14px rgba(255,92,56,.55);transition:transform .12s}
+  .roi-input input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.08)}
+  .roi-input input[type=range]::-webkit-slider-thumb:active{cursor:grabbing;transform:scale(1.15)}
+  .roi-input input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:var(--coral);
+    cursor:grab;border:3px solid var(--ink);box-shadow:0 4px 14px rgba(255,92,56,.55)}
+  .roi-input input[type=range]:focus{outline:none}
+  .roi-input input[type=range]:focus::-webkit-slider-thumb{box-shadow:0 0 0 4px rgba(255,92,56,.25),0 4px 14px rgba(255,92,56,.55)}
   .roi-input .val{font-family:'Bricolage Grotesque';font-size:22px;font-weight:700;color:var(--cream);min-width:90px;text-align:right;letter-spacing:-.01em}
   .roi-result{background:linear-gradient(160deg,rgba(255,92,56,.14),rgba(124,92,255,.08) 70%,var(--surface));
     border:1px solid rgba(255,92,56,.35);border-radius:22px;padding:34px 28px;display:flex;flex-direction:column;
