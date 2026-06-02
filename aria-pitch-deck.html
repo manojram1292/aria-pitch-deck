@@ -177,7 +177,11 @@
   .cap h3{font-family:'Bricolage Grotesque';font-size:17px;font-weight:600;margin-bottom:4px}
   .cap p{font-size:13.5px;color:var(--muted);line-height:1.45}
 
-  /* ---------- Industries (Use Cases — 8) ---------- */
+  /* ---------- Industries (Use Cases) ---------- */
+  .vert-group{font-family:'Bricolage Grotesque';font-size:13px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--muted);margin-bottom:14px;display:flex;align-items:center;gap:12px}
+  .vert-group::before,.vert-group::after{content:"";flex:0 0 24px;height:1px;background:var(--line-strong)}
+  .vert-group::after{flex:1}
   .verts{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
   .vert{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px 20px;transition:.22s}
   .vert:hover{border-color:var(--coral);background:var(--surface-2);transform:translateY(-3px)}
@@ -509,19 +513,35 @@
   <section id="use-cases">
     <div class="wrap">
       <div class="secthead">
-        <span class="kicker rv">Built for your industry</span>
+        <span class="kicker rv">Built for your trade or industry</span>
         <h2 class="rv d1">One agent.<br><span class="accent">Every service business.</span></h2>
-        <p class="lead rv d2">Aria is tailored per industry — she speaks your language and asks the right questions for the work you do.</p>
+        <p class="lead rv d2">Aria is tailored per vertical — she speaks your language and asks the right questions for the work you do.</p>
       </div>
+
+      <!-- Group A: original home-service trades -->
+      <h3 class="vert-group rv d3">Home & field service trades</h3>
+      <div class="verts">
+        <div class="vert rv d1"><span class="e">🔧</span><h3>Plumbing</h3><p>Emergency triage, after-hours leaks, booking & dispatch.</p></div>
+        <div class="vert rv d2"><span class="e">🌿</span><h3>Lawn &amp; Landscaping</h3><p>Quote requests, recurring schedules, seasonal upsells.</p></div>
+        <div class="vert rv d3"><span class="e">❄️</span><h3>HVAC</h3><p>No-heat/no-cool urgency, maintenance plans, service windows.</p></div>
+        <div class="vert rv d4"><span class="e">⚡</span><h3>Electrical</h3><p>Safety triage, estimates, permit-job intake & scheduling.</p></div>
+        <div class="vert rv d1"><span class="e">🧹</span><h3>Cleaning</h3><p>Recurring bookings, square-footage quotes, reschedules.</p></div>
+        <div class="vert rv d2"><span class="e">🪲</span><h3>Pest Control</h3><p>Inspection bookings, treatment plans, follow-up visits.</p></div>
+        <div class="vert rv d3"><span class="e">🏠</span><h3>Roofing</h3><p>Storm-damage intake, inspection scheduling, insurance leads.</p></div>
+        <div class="vert rv d4"><span class="e">🛠️</span><h3>&amp; any handyman</h3><p>If you take calls and book jobs — Aria fits.</p></div>
+      </div>
+
+      <!-- Group B: broader service industries from V1.1 spec -->
+      <h3 class="vert-group rv d3" style="margin-top:38px">And service industries of all kinds</h3>
       <div class="verts">
         <div class="vert rv d1"><span class="e">🏥</span><h3>Health Clinics</h3><p>Appointment booking, patient intake, symptom triage, follow-ups & reminders.</p></div>
         <div class="vert rv d2"><span class="e">🛡️</span><h3>Insurance</h3><p>Quote requests, policy queries, claims intake, lead qualification & callback scheduling.</p></div>
-        <div class="vert rv d3"><span class="e">🏠</span><h3>Real Estate</h3><p>Buyer/seller inquiries, property details, viewing bookings, lead qualification & follow-ups.</p></div>
+        <div class="vert rv d3"><span class="e">🏘️</span><h3>Real Estate</h3><p>Buyer/seller inquiries, property details, viewing bookings, lead qualification & follow-ups.</p></div>
         <div class="vert rv d4"><span class="e">🍽️</span><h3>Restaurants</h3><p>Reservation handling, waitlist management, catering inquiries & peak-hour call answering.</p></div>
-        <div class="vert rv d5"><span class="e">🏦</span><h3>Financial Institutions</h3><p>Customer queries, account support routing, appointment scheduling & lead capture.</p></div>
-        <div class="vert rv d6"><span class="e">💇</span><h3>Salons</h3><p>Booking appointments, stylist availability checks, reschedules & recurring client reminders.</p></div>
-        <div class="vert rv d6"><span class="e">🏋️</span><h3>Gyms & Wellness</h3><p>Membership inquiries, trial bookings, class scheduling & retention follow-ups.</p></div>
-        <div class="vert rv d6"><span class="e">🚚</span><h3>Logistics</h3><p>Delivery updates, shipment inquiries, pickup scheduling & customer support handling.</p></div>
+        <div class="vert rv d1"><span class="e">🏦</span><h3>Financial Institutions</h3><p>Customer queries, account support routing, appointment scheduling & lead capture.</p></div>
+        <div class="vert rv d2"><span class="e">💇</span><h3>Salons</h3><p>Booking appointments, stylist availability checks, reschedules & recurring client reminders.</p></div>
+        <div class="vert rv d3"><span class="e">🏋️</span><h3>Gyms & Wellness</h3><p>Membership inquiries, trial bookings, class scheduling & retention follow-ups.</p></div>
+        <div class="vert rv d4"><span class="e">🚚</span><h3>Logistics</h3><p>Delivery updates, shipment inquiries, pickup scheduling & customer support handling.</p></div>
       </div>
     </div>
   </section>
